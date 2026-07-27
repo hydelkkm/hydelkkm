@@ -39,20 +39,26 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     }
 });
 
+// === UPDATED LOGIN LOGIC ===
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginError.classList.add('hidden');
     
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+    // Get the ID and PIN, remove spaces, and make ID lowercase
+    const rawUserId = document.getElementById('userid').value.trim().toLowerCase();
+    const rawPin = document.getElementById('pin').value.trim();
+
+    // The Magic Trick: Convert into an email and password
+    const secretEmail = rawUserId + '@hydelkkm.app';
+    const secretPassword = 'hydelkkm' + rawPin; 
 
     const { error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
+        email: secretEmail,
+        password: secretPassword,
     });
 
     if (error) {
-        loginError.textContent = error.message;
+        loginError.textContent = "Invalid User ID or PIN.";
         loginError.classList.remove('hidden');
     }
 });
@@ -193,7 +199,7 @@ function renderTable(transactions) {
 
 refreshBtn.addEventListener('click', fetchTransactions);
 
-// 6. ADMIN PANEL LOGIC
+// === UPDATED ADMIN PANEL LOGIC ===
 if (adminSignupForm) {
     adminSignupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -201,8 +207,12 @@ if (adminSignupForm) {
         adminMsg.className = "text-sm text-yellow-500 mt-2";
         adminMsg.textContent = "Creating account... please wait.";
 
-        const newEmail = document.getElementById('new-staff-email').value;
-        const newPassword = document.getElementById('new-staff-password').value;
+        const rawNewId = document.getElementById('new-staff-id').value.trim().toLowerCase();
+        const rawNewPin = document.getElementById('new-staff-pin').value.trim();
+
+        // The Magic Trick applied to new accounts
+        const newEmail = rawNewId + '@hydelkkm.app';
+        const newPassword = 'hydelkkm' + rawNewPin;
 
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: newEmail,
