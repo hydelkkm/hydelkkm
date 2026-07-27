@@ -1,4 +1,4 @@
-// 1. SUPABASE INITIALIZATION
+// 1. SUPABASE INITIALIZATION (Declared safely once)
 const SUPABASE_URL = 'https://fdxtrrpleeszmitahigb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_PjTIhL1WHyWnFORdzH0P6g_T8osHYfA';
 
@@ -39,16 +39,14 @@ supabase.auth.onAuthStateChange(async (event, session) => {
     }
 });
 
-// === UPDATED LOGIN LOGIC ===
+// LOGIN LOGIC (Maps User ID + PIN to hydelkkm.app email format)
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginError.classList.add('hidden');
     
-    // Get the ID and PIN, remove spaces, and make ID lowercase
     const rawUserId = document.getElementById('userid').value.trim().toLowerCase();
     const rawPin = document.getElementById('pin').value.trim();
 
-    // The Magic Trick: Convert into an email and password
     const secretEmail = rawUserId + '@hydelkkm.app';
     const secretPassword = 'hydelkkm' + rawPin; 
 
@@ -199,7 +197,7 @@ function renderTable(transactions) {
 
 refreshBtn.addEventListener('click', fetchTransactions);
 
-// === UPDATED ADMIN PANEL LOGIC ===
+// 6. ADMIN PANEL LOGIC
 if (adminSignupForm) {
     adminSignupForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -210,7 +208,6 @@ if (adminSignupForm) {
         const rawNewId = document.getElementById('new-staff-id').value.trim().toLowerCase();
         const rawNewPin = document.getElementById('new-staff-pin').value.trim();
 
-        // The Magic Trick applied to new accounts
         const newEmail = rawNewId + '@hydelkkm.app';
         const newPassword = 'hydelkkm' + rawNewPin;
 
@@ -235,7 +232,7 @@ if (adminSignupForm) {
             adminMsg.textContent = "Account created, but failed to assign STAFF badge.";
         } else {
             adminMsg.className = "text-sm text-green-500 mt-2";
-            adminMsg.textContent = "Success! You are now logged in as the new staff. Please logout and log back in as OSD.";
+            adminMsg.textContent = "Success! Account created.";
             adminSignupForm.reset();
         }
     });
