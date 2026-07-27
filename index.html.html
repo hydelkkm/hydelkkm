@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kakkayam Site Ledger</title>
+    <!-- Tailwind CSS for rapid PWA styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <!-- ========================================== -->
+    <!-- LOGIN SCREEN                               -->
+    <!-- ========================================== -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-blue-600">Kakkayam Hydel Tourism</h1>
+                <p class="text-gray-500 mt-2">Site Ledger Login</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="password" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Sign In
+                </button>
+            </form>
+            <div id="login-error" class="text-red-500 text-sm text-center mt-4 hidden"></div>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- DASHBOARD SCREEN (Hidden by default)       -->
+    <!-- ========================================== -->
+    <div id="dashboard-screen" class="hidden min-h-screen pb-10">
+        
+        <!-- Header bar -->
+        <nav class="bg-blue-600 text-white shadow-md">
+            <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+                <h1 class="font-bold text-lg">Site Ledger</h1>
+                <div class="flex items-center gap-4">
+                    <span id="user-role-badge" class="px-2 py-1 bg-blue-800 text-xs rounded-full">Role</span>
+                    <button id="logout-btn" class="text-sm hover:underline">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-4xl mx-auto px-4 mt-6 space-y-6">
+            
+            <!-- Balance Card -->
+            <div class="bg-white rounded-xl shadow-sm p-6 text-center border-t-4 border-blue-500">
+                <h2 class="text-gray-500 text-sm uppercase tracking-wide font-semibold">Current Cash in Hand</h2>
+                <div class="text-4xl font-bold text-gray-900 mt-2">₹<span id="current-balance">0.00</span></div>
+            </div>
+
+            <!-- Transaction Form -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-bold mb-4 border-b pb-2">Log New Transaction</h3>
+                <form id="transaction-form" class="space-y-4">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Type: Hidden for Staff, Staff can only submit Expenses. OSD sees this. -->
+                        <div id="transaction-type-container" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700">Type</label>
+                            <select id="type" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md">
+                                <option value="Site_Expense">Site Expense (Outflow)</option>
+                                <option value="Transfer_From_OSD">Fund Transfer (Inflow from OSD)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Amount (₹)</label>
+                            <input type="number" id="amount" required min="1" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700">Description / Particulars</label>
+                            <input type="text" id="description" required placeholder="e.g., Park maintenance materials" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Paid By / To</label>
+                            <input type="text" id="paid_by" required placeholder="Name of vendor or staff" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Cheque No. (Optional)</label>
+                            <input type="text" id="cheque_no" placeholder="Leave blank if cash" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full md:w-auto mt-4 py-2 px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md shadow-sm transition-colors">
+                        Submit Transaction
+                    </button>
+                </form>
+            </div>
+
+            <!-- Ledger Table -->
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b bg-gray-50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold">Recent Transactions</h3>
+                    <button id="refresh-btn" class="text-sm text-blue-600 hover:underline">Refresh Data</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3">Date</th>
+                                <th class="px-6 py-3">Type</th>
+                                <th class="px-6 py-3">Particulars</th>
+                                <th class="px-6 py-3">Cheque/Paid By</th>
+                                <th class="px-6 py-3 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledger-table-body" class="divide-y divide-gray-200">
+                            <!-- Rows will be injected here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- The JavaScript file we will write next -->
+    <script src="app.js"></script>
+</body>
+</html>
